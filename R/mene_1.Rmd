@@ -105,10 +105,57 @@ More [weighting info](http://publications.naturalengland.org.uk/publication/2248
 
 MENE [Dashboard](https://defra.maps.arcgis.com/apps/MapSeries/index.html?appid=2f24d6c942d44e81821c3ed2d4ab2ada):
 
+**People and Nature**
+
+[Weighting](https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1021832/The_PeopleandNature_Survey_For_England_Weighting_Guidance.pdf)
+
+[Infographic](https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1020644/PANS_Year_1_summary_infographic.pdf) (2020/2021)
+
 ## Import data
 
 ```{r}
+visit_proportions <- readxl::read_xlsx("../../datasets/people_and_nature_survey/num_green_space_visits.xlsx") %>% 
+  mutate(date = lubridate::date(date),
+         year = factor(lubridate::year(date)),
+         month = lubridate::month(date),
+         month_fct = factor(month, levels = 1:12, labels = month.abb),
+         interim = factor(interim),
+         est_perc_adults = round(est_perc_adults, 2))
 
+ne_colour_pallette <- c("#126E96", "#0EAB4E")
+
+visit_proportions %>% 
+  filter(num_visits == "Any visits*" |
+           num_visits ==  "Any visits**") %>% 
+  
+  ggplot() +
+  
+  geom_ribbon(aes(x = month_fct, ymin = ci_low , ymax = ci_high, 
+                  fill = year, group = year), 
+              alpha = 0.1) +
+  
+  geom_line(aes(x = month_fct, y = est_perc_adults,
+                colour = year, group = year)) +
+  
+  geom_point(aes(x = month_fct, y = est_perc_adults,
+                colour = year, group = year)) +
+  
+  geom_text(aes(x = month_fct, y = est_perc_adults,
+                colour = year, group = year,
+                label = round(est_perc_adults * 100, 0))) +
+  #coord_flip() +
+  #scale_x_continuous(breaks = 1:12) +
+  scale_fill_manual(values =  ne_colour_pallette) +
+  scale_colour_manual(values =  ne_colour_pallette) +
+  coord_polar(start = 6) +
+  #ylim(0, NA) +
+  labs(x = NULL) +
+  theme_cjmr_explanatory() +
+  theme(panel.grid.major.y = element_blank(),
+        panel.grid.major.x = element_line(),
+        axis.line.x = element_blank(),
+        axis.text.y = element_blank(),
+        legend.position = "none")
 ```
 
 ## Clean data
@@ -135,17 +182,17 @@ MENE [Dashboard](https://defra.maps.arcgis.com/apps/MapSeries/index.html?appid=2
 
 ## Think about the audience
 
-+-----------------------------------------------------------------------------------+----------+
-| To think about                                                                    | Notes    |
-+===================================================================================+==========+
-| Can you think of a group of people who might view the visualisations?             |          |
-+-----------------------------------------------------------------------------------+----------+
-| Can you think of a specific person who might view the visualizations?             |          |
-+-----------------------------------------------------------------------------------+----------+
-| What do want the audience to know or be able to after viewing the visualizations? |          |
-+-----------------------------------------------------------------------------------+----------+
-| What expectations might the audience have about visualisations of this data?      |          |
-+-----------------------------------------------------------------------------------+----------+
++-----------------------------------------------------------------------------------+------------+
+| To think about                                                                    | Notes      |
++===================================================================================+============+
+| Can you think of a group of people who might view the visualisations?             |            |
++-----------------------------------------------------------------------------------+------------+
+| Can you think of a specific person who might view the visualizations?             |            |
++-----------------------------------------------------------------------------------+------------+
+| What do want the audience to know or be able to after viewing the visualizations? |            |
++-----------------------------------------------------------------------------------+------------+
+| What expectations might the audience have about visualisations of this data?      |            |
++-----------------------------------------------------------------------------------+------------+
 
 ## Ask some questions to be answered by the visualizations
 
@@ -221,20 +268,20 @@ Based on [Flowing Data](https://flowingdata.com/visualization-for-clarity/design
 
 Think about each issue (in bold below) as a continuum rather than a check-box.
 
-+-----------------------------------------------------+-------------------------------------------------------------+------------+
-| Question to consider                                | Tips                                                        | Notes      |
-+=====================================================+=============================================================+============+
-| Are the **encodings** explained?                    | Air on the side of too much explanation ...                 |            |
-+-----------------------------------------------------+-------------------------------------------------------------+------------+
-| Is the **context** explained?                       | Titles, subtitles                                           |            |
-|                                                     |                                                             |            |
-|                                                     | Annotate                                                    |            |
-|                                                     |                                                             |            |
-|                                                     | Use colour to highlight                                     |            |
-+-----------------------------------------------------+-------------------------------------------------------------+------------+
-| Does it have **readability** like text?             | Think visual hierarchy *(as when laying out text)*          |            |
-+-----------------------------------------------------+-------------------------------------------------------------+------------+
-| Do the **aesthetics** align with the topic/message? | Serious topic -> dark colours, straight-forward chart types |            |
-+-----------------------------------------------------+-------------------------------------------------------------+------------+
++-----------------------------------------------------+-------------------------------------------------------------+-------------+
+| Question to consider                                | Tips                                                        | Notes       |
++=====================================================+=============================================================+=============+
+| Are the **encodings** explained?                    | Air on the side of too much explanation ...                 |             |
++-----------------------------------------------------+-------------------------------------------------------------+-------------+
+| Is the **context** explained?                       | Titles, subtitles                                           |             |
+|                                                     |                                                             |             |
+|                                                     | Annotate                                                    |             |
+|                                                     |                                                             |             |
+|                                                     | Use colour to highlight                                     |             |
++-----------------------------------------------------+-------------------------------------------------------------+-------------+
+| Does it have **readability** like text?             | Think visual hierarchy *(as when laying out text)*          |             |
++-----------------------------------------------------+-------------------------------------------------------------+-------------+
+| Do the **aesthetics** align with the topic/message? | Serious topic -> dark colours, straight-forward chart types |             |
++-----------------------------------------------------+-------------------------------------------------------------+-------------+
 
 ## Remember it is an iterative process
