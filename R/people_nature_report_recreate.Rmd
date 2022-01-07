@@ -98,13 +98,17 @@ Trying to recreate and enahnce figures from "T[he People and Nature Survey for E
 ## Import data
 
 ```{r}
+# ../../../datasets/people_and_nature_survey/People_and_Nature_Q1_Q4.xlsx HOME
+# ../../datasets/people_and_nature_survey/People_and_Nature_Q1_Q4.xlsx WORK
 
+pan_raw <- readxl::read_xlsx("../../datasets/people_and_nature_survey/People_and_Nature_Q1_Q4.xlsx", sheet = "Data", guess_max = 26000)
 ```
 
 ## Clean data
 
 ```{r}
-
+pan_clean <- pan_raw %>% 
+  janitor::clean_names()
 ```
 
 ## Explore the data
@@ -125,21 +129,21 @@ Trying to recreate and enahnce figures from "T[he People and Nature Survey for E
 
 ## Think about the audience
 
-+-----------------------------------------------------------------------------------+----------+
-| To think about                                                                    | Notes    |
-+===================================================================================+==========+
-| Can you think of a group of people who might view the visualisations?             |          |
-+-----------------------------------------------------------------------------------+----------+
-| Can you think of a specific person who might view the visualizations?             |          |
-+-----------------------------------------------------------------------------------+----------+
-| What do want the audience to know or be able to after viewing the visualizations? |          |
-+-----------------------------------------------------------------------------------+----------+
-| What expectations might the audience have about visualisations of this data?      |          |
-+-----------------------------------------------------------------------------------+----------+
++-----------------------------------------------------------------------------------+-----------+
+| To think about                                                                    | Notes     |
++===================================================================================+===========+
+| Can you think of a group of people who might view the visualisations?             |           |
++-----------------------------------------------------------------------------------+-----------+
+| Can you think of a specific person who might view the visualizations?             |           |
++-----------------------------------------------------------------------------------+-----------+
+| What do want the audience to know or be able to after viewing the visualizations? |           |
++-----------------------------------------------------------------------------------+-----------+
+| What expectations might the audience have about visualisations of this data?      |           |
++-----------------------------------------------------------------------------------+-----------+
 
 ## Ask some questions to be answered by the visualizations
 
-1.  ...
+1.  How does the proportion of people who have visited green space in the last 14 days change over the course of FY 2020/21?
 
 2.  ...
 
@@ -155,11 +159,109 @@ Based on the questions above, the story might go something like this:
 
 ### Visualization 1 (question n)
 
-| Question | Answer (i.e. title) | Notes to consider in design, chart types etc. |
-|----------|---------------------|-----------------------------------------------|
-|          |                     |                                               |
++-----------------------------------------------------------------------------------------------------------------------------+---------------------+-----------------------------------------------+
+| Question                                                                                                                    | Answer (i.e. title) | Notes to consider in design, chart types etc. |
++=============================================================================================================================+=====================+===============================================+
+| 1.  How does the proportion of people who have visited green space in the last 14 days change over the course of FY 2020/21 |                     |                                               |
++-----------------------------------------------------------------------------------------------------------------------------+---------------------+-----------------------------------------------+
 
 ```{r}
+a_y_14_fct_levels <- c("Other", "No visits","Any visits")
+
+any_visits_by_month <- pan_clean %>% 
+  
+  mutate(any_visits_14 = if_else(any_visits_14 == "Dont know" | 
+                                   any_visits_14 == "Prefer not to say",
+                                 true = "Other", 
+                                 false = any_visits_14)) %>% 
+  
+  select(wave, weight_percent, any_visits_14) %>%
+  filter(!is.na(any_visits_14)) %>% 
+  separate(wave, into = c("wave", "date"), sep = " - ") %>% 
+  mutate(date = lubridate::my(date)) %>% 
+  select(-wave) %>% 
+  group_by(date, any_visits_14) %>% 
+  summarise(n = sum(weight_percent)) %>% 
+  mutate(month = format(date,"%B"), freq = n / sum(n),
+         any_visits_14_fct = factor(any_visits_14,
+                                    levels = a_y_14_fct_levels)) %>% 
+  ungroup() 
+
+
+ggplot(any_visits_by_month, aes(date, freq, fill = any_visits_14_fct)) +
+  geom_area(alpha = 0.75) +
+  
+  scale_x_date(expand = c(0,10), date_breaks = "1 month",
+               date_labels = "%b") +
+  scale_y_continuous(expand = c(0,0),
+                     labels = scales::percent_format(scale = 100)) +
+  scale_fill_manual(values = c("white", "grey85", "#0EAB4E")) +
+  
+  labs(x = NULL) +
+  theme_cjmr_explanatory() +
+  theme(legend.position = "none")
+  #facet_wrap(~any_visits_14_fct)
+
+ggsave("viz_out/figure_1.svg", units = "mm", height = 70, width = 120)
+
+# output for table
+any_visits_by_month %>% 
+  select(month, any_visits_14_fct, freq) %>% 
+  pivot_wider(names_from = month, values_from = freq) %>% 
+  arrange(desc(any_visits_14_fct)) %>% 
+  write_csv("data_out/any_visits_by_month.csv")
+  
+```
+
+**Calculate confidence intervals**
+
+Just for the proportion of people who have visited in the last 14 days
+
+```{r}
+ci_plot_df <- any_visits_by_month %>% 
+
+  # focus on proportion who have visted
+  filter(any_visits_14_fct == "Any visits") %>% 
+  
+  # calculate standard error
+  mutate(z = 1.96,
+         se = sqrt(freq * (1 - freq) / n)) %>% 
+  
+  # calculate upper and lower bounds of 95% confidence interval
+  mutate(lower_ci = freq - (z * se),
+         upper_ci = freq + (z * se)) %>% 
+  
+  # prepare for plotting
+  select(date, freq, lower_ci, upper_ci)
+
+ggplot(ci_plot_df) +
+  
+  geom_ribbon(mapping = aes(x = date,
+                            ymin = lower_ci,
+                            ymax = upper_ci),
+              fill = "#5CD58D", alpha = 0.5) +
+  geom_line(mapping = aes(date, freq),
+            colour = "#077C37") +
+  
+  # geom_errorbar(mapping = aes(x = date,
+  #                           ymin = lower_ci,
+  #                           ymax = upper_ci),
+  #                colour = "#33BB6A", width = 5) +
+  
+  geom_point(mapping = aes(date, freq),
+             colour = "#077C37") +
+  
+  scale_x_date(expand = c(0,10), date_breaks = "1 month",
+               date_labels = "%b") +
+  scale_y_continuous(expand = c(0,0),
+                     labels = scales::percent_format(scale = 100,
+                                                     accuracy = 5)) +
+  labs(x = NULL) +
+  
+  theme_cjmr_explanatory()
+
+ggsave("viz_out/figure_2.svg", units = "mm", height = 70, width = 120)
+  
 
 ```
 
