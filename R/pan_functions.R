@@ -1,4 +1,5 @@
 library(tidyverse)
+library(lubridate)
 
 read_pan <- function(location){
 
@@ -13,3 +14,15 @@ read_pan <- function(location){
 
 }
 
+
+wave_to_date <- function(df){
+
+  res <- df %>%
+    separate(wave, into = c("wave", "date"), sep = " - ") %>%
+    mutate(date = lubridate::my(date),
+           date = date %m+% days(15)) %>%
+    select(-wave)
+
+  return(res)
+
+}
