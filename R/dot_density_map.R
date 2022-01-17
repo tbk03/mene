@@ -93,6 +93,8 @@ no_visits_sf <- msoa_pop_sf %>%
   select(num_no_visits) %>%
   mutate(num_no_visits_points = round(num_no_visits / 1000))
 
+sum(no_visits_sf$num_no_visits)
+
 
 # dummy_sf <- no_visits_sf %>%
 #   slice(1:10)
@@ -111,23 +113,25 @@ no_visits_sf <- msoa_pop_sf %>%
 # no_visits_sf %>%
 #   filter(is.na(rgn21nm))
 
-dot_density_points <- st_sample(no_visits_sf %>%
-                                  slice(1:10),
-                                no_visits_sf$num_no_visits_points[1:10])
-
-dot_density_points <- st_sample(no_visits_sf,
-                                no_visits_sf$num_no_visits_points)
-
-st_write(dot_density_points,
-         "data_out/dot_density.shp",
-         delete_layer = TRUE)
+# dot_density_points <- st_sample(no_visits_sf %>%
+#                                   slice(1:10),
+#                                 no_visits_sf$num_no_visits_points[1:10])
+#
+# dot_density_points <- st_sample(no_visits_sf,
+#                                 no_visits_sf$num_no_visits_points)
+#
+# st_write(dot_density_points,
+#          "data_out/dot_density.shp",
+#          delete_layer = TRUE)
 
 ddps <- st_read("data_out/dot_density.shp")
 
-ggplot(dot_density_points) +
-  geom_sf(alpha = 0.3, size = 0.05) +
-  ggthemes::theme_map()
+# ggplot(dot_density_points) +
+#   geom_sf(alpha = 0.3, size = 0.05) +
+#   ggthemes::theme_map()
 
 ggplot(ddps) +
-  geom_sf(alpha = 0.3, size = 0.05) +
+  geom_sf(alpha = 0.3, size = 0.01) +
   ggthemes::theme_map()
+
+ggsave("viz_out/dd_map.svg", units = "mm", height = 130, width = 120)
