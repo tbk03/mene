@@ -118,5 +118,16 @@ dot_density_points <- st_sample(no_visits_sf %>%
 dot_density_points <- st_sample(no_visits_sf,
                                 no_visits_sf$num_no_visits_points)
 
+st_write(dot_density_points,
+         "data_out/dot_density.shp",
+         delete_layer = TRUE)
+
+ddps <- st_read("data_out/dot_density.shp")
+
 ggplot(dot_density_points) +
-  geom_sf()
+  geom_sf(alpha = 0.3, size = 0.05) +
+  ggthemes::theme_map()
+
+ggplot(ddps) +
+  geom_sf(alpha = 0.3, size = 0.05) +
+  ggthemes::theme_map()
