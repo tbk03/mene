@@ -69,6 +69,7 @@ ggplot() +
   theme(legend.position = "none")
 
 ggsave("viz_out/figure_5.svg", units = "mm", width = 161, height = 80)
+ggsave("viz_out/figure_5_large.svg", units = "mm", width = 200, height = 85)
 
 ggplot() +
 
@@ -91,4 +92,13 @@ ggplot() +
 
 ggsave("viz_out/figure_6.svg", units = "mm", width = 161, height = 80)
 
+
+# *****************************************************************************
+# Get data points for annotations
+# *****************************************************************************
+covid_trends_df %>%
+  filter(response == "Yes") %>%
+  group_by(question) %>%
+  summarise(max = max(prop),
+            min = min(prop))
 
