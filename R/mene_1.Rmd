@@ -36,7 +36,7 @@ library(readxl)     # for reading excel files
 # library(textshaping)
 library(ragg)
 
-library(cjmr)       # my own package including default styling for plots
+#library(cjmr)       # my own package including default styling for plots
 
 # set default theme for exploratory plots
 theme_set(theme_light())
@@ -118,7 +118,7 @@ MENE [Dashboard](https://defra.maps.arcgis.com/apps/MapSeries/index.html?appid=2
 # home machine path: ../../../datasets/people_and_nature_survey/num_green_space_visits.xlsx
 # work machine path: ../../datasets/people_and_nature_survey/num_green_space_visits.xlsx
 
-visit_proportions <- readxl::read_xlsx("../../../datasets/people_and_nature_survey/num_green_space_visits.xlsx") %>% 
+visit_proportions <- readxl::read_xlsx("../../datasets/people_and_nature_survey/num_green_space_visits.xlsx") %>% 
   mutate(date = lubridate::date(date),
          year = factor(lubridate::year(date)),
          month = lubridate::month(date),
@@ -154,7 +154,7 @@ visit_proportions %>%
   coord_polar(start = 6) +
   #ylim(0, NA) +
   labs(x = NULL) +
-  theme_cjmr_explanatory() +
+  #theme_cjmr_explanatory() +
   theme(panel.grid.major.y = element_blank(),
         panel.grid.major.x = element_line(),
         axis.line.x = element_blank(),

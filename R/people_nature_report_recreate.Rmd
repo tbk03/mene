@@ -36,7 +36,7 @@ library(readxl)     # for reading excel files
 # library(textshaping)
 library(ragg)
 
-library(cjmr)       # my own package including default styling for plots
+#library(cjmr)       # my own package including default styling for plots
 
 # set default theme for exploratory plots
 theme_set(theme_light())
@@ -198,18 +198,18 @@ ggplot(any_visits_by_month, aes(date, freq, fill = any_visits_14_fct)) +
   scale_fill_manual(values = c("white", "grey85", "#0EAB4E")) +
   
   labs(x = NULL) +
-  theme_cjmr_explanatory() +
+  #theme_cjmr_explanatory() +
   theme(legend.position = "none")
   #facet_wrap(~any_visits_14_fct)
 
-ggsave("viz_out/figure_1.svg", units = "mm", height = 70, width = 120)
+ggsave("../viz_out/figure_1.svg", units = "mm", height = 70, width = 120)
 
 # output for table
 any_visits_by_month %>% 
   select(month, any_visits_14_fct, freq) %>% 
   pivot_wider(names_from = month, values_from = freq) %>% 
   arrange(desc(any_visits_14_fct)) %>% 
-  write_csv("data_out/any_visits_by_month.csv")
+  write_csv("../data_out/any_visits_by_month.csv")
   
 ```
 
@@ -256,11 +256,11 @@ ggplot(ci_plot_df) +
   scale_y_continuous(expand = c(0,0),
                      labels = scales::percent_format(scale = 100,
                                                      accuracy = 5)) +
-  labs(x = NULL) +
+  labs(x = NULL) #+
   
-  theme_cjmr_explanatory()
+  #theme_cjmr_explanatory()
 
-ggsave("viz_out/figure_2.svg", units = "mm", height = 70, width = 120)
+ggsave("../viz_out/figure_2.svg", units = "mm", height = 70, width = 120)
   
 
 ```

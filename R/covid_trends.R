@@ -1,5 +1,5 @@
 library(tidyverse)
-library(cjmr)
+#library(cjmr)
 library(lubridate)
 
 source("R/pan_functions.R")
@@ -65,8 +65,9 @@ ggplot() +
                      expand = c(0,0), limits = c(0,0.8)) +
 
   labs(x = NULL) +
-  theme_cjmr_explanatory() +
+  #theme_cjmr_explanatory() +
   theme(legend.position = "none")
+
 
 ggsave("viz_out/figure_5.svg", units = "mm", width = 161, height = 80)
 ggsave("viz_out/figure_5_large.svg", units = "mm", width = 200, height = 85)
@@ -87,7 +88,7 @@ ggplot() +
                      expand = c(0,0), limits = c(0,0.8)) +
 
   labs(x = NULL) +
-  theme_cjmr_explanatory() +
+  #theme_cjmr_explanatory() +
   theme(legend.position = "none")
 
 ggsave("viz_out/figure_6.svg", units = "mm", width = 161, height = 80)
@@ -102,3 +103,27 @@ covid_trends_df %>%
   summarise(max = max(prop),
             min = min(prop))
 
+
+# *****************************************************************************
+# Additional plot
+# *****************************************************************************
+
+ggplot() +
+
+  # geom_rect(data = filter(bg_dates, q_type == "negative"),
+  #           mapping = aes(xmin = start_date, xmax = end_date),
+  #           ymin = 0, ymax = 1, fill = "grey50", alpha = 0.2) +
+
+  geom_line(data = filter(covid_trends_df, response == "Yes"),
+            mapping = aes(date, prop, colour = question)) +
+
+  scale_x_date(expand = c(0,10), date_breaks = "1 month",
+               date_labels = "%b") +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1),
+                     expand = c(0,0), limits = c(0,0.8)) +
+
+  labs(x = NULL)#+
+  #theme_cjmr_explanatory() +
+  #theme(legend.position = "none")
+
+ggsave("viz_out/for_IDG.jpg", units = "px", width = 1920, height = 1080)
